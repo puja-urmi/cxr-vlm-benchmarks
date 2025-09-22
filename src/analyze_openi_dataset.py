@@ -1,5 +1,3 @@
-# analyze_openi_dataset.py
-
 """
 Script to load and analyze the Open-i dataset for report generation.
 """
