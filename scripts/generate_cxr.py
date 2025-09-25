@@ -5,10 +5,10 @@ from transformers import AutoProcessor, AutoModelForVision2Seq
 
 def main():
     # Paths
-    reports_csv = '/home/psaha03/scratch/complete_dataset/indiana_reports_complete.csv'
+    reports_csv = '/home/psaha03/scratch/complete_dataset/indiana_test.csv'
     projections_csv = '/home/psaha03/scratch/complete_dataset/indiana_projections_complete.csv'
     image_dir = '/home/psaha03/scratch/complete_dataset/images'
-    output_csv = '/home/psaha03/scratch/complete_dataset/cxr_generated_results.csv'
+    output_csv = '/home/psaha03/scratch/complete_dataset/generated_report_pretrained(50).csv'
 
     # Load data
     reports = pd.read_csv(reports_csv)
@@ -36,8 +36,8 @@ def main():
     generated_list = []
     reference_list = []
 
-    # Evaluate
-    for idx, row in df.iterrows():
+    # Evaluate only the first 5 cases
+    for idx, row in df.head(50).iterrows():
         img_path = row['image_path']
         if not os.path.exists(img_path):
             print(f"Image not found: {img_path}")

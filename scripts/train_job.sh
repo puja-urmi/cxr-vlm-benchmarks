@@ -4,11 +4,12 @@
 #SBATCH --cpus-per-task=32
 #SBATCH --ntasks-per-node=1
 #SBATCH --mem=32000M
-#SBATCH --time=0-02:00:00
+#SBATCH --time=0-05:00:00
 #SBATCH --output=logs_%J.log   
 
 # Load the required modules
 module load python/3.11
+module load gcc arrow
 source /home/psaha03/scratch/env/bin/activate
 
-python /home/psaha03/scratch/xray-report-generation/scripts/generate_cxr.py
+python /home/psaha03/scratch/xray-report-generation/scripts/fine_tune_all.py
