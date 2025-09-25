@@ -9,12 +9,12 @@ import os
 import shutil
 
 # Paths
-image_dir = '/Users/pujasaha/Documents/iu_xray/images_normalized'
-reports_path = '/Users/pujasaha/Documents/iu_xray/indiana_reports.csv'
-projections_path = '/Users/pujasaha/Documents/iu_xray/indiana_projections.csv'
+image_dir = '/home/psaha03/scratch/original_dataset/images_normalized'
+reports_path = '/home/psaha03/scratch/original_dataset/indiana_reports.csv'
+projections_path = '/home/psaha03/scratch/original_dataset/indiana_projections.csv'
 
 # Output paths
-output_dir = '/Users/pujasaha/Documents/iu_xray/complete_dataset'
+output_dir = '/home/psaha03/scratch/complete_dataset'
 output_image_dir = os.path.join(output_dir, 'images')
 os.makedirs(output_image_dir, exist_ok=True)
 

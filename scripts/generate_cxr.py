@@ -5,10 +5,10 @@ from transformers import AutoProcessor, AutoModelForVision2Seq
 
 def main():
     # Paths
-    reports_csv = '/Users/pujasaha/Documents/iu_xray/complete_dataset/indiana_reports_complete.csv'
-    projections_csv = '/Users/pujasaha/Documents/iu_xray/complete_dataset/indiana_projections_complete.csv'
-    image_dir = '/Users/pujasaha/Documents/iu_xray/complete_dataset/images'
-    output_csv = '/Users/pujasaha/Documents/iu_xray/complete_dataset/cxr_generated_results.csv'
+    reports_csv = '/home/psaha03/scratch/complete_dataset/indiana_reports_complete.csv'
+    projections_csv = '/home/psaha03/scratch/complete_dataset/indiana_projections_complete.csv'
+    image_dir = '/home/psaha03/scratch/complete_dataset/images'
+    output_csv = '/home/psaha03/scratch/complete_dataset/cxr_generated_results.csv'
 
     # Load data
     reports = pd.read_csv(reports_csv)

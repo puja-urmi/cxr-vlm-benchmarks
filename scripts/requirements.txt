@@ -6,3 +6,8 @@ transformers
 torch
 matplotlib
 seaborn
+
+# Evaluation libraries
+bert-score
+nltk
+rouge-score
