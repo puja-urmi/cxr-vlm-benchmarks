@@ -1,8 +1,8 @@
 
 
-# X-ray Report Generation (CXR)
+# X-ray Report Generation using Vision Language Model
 
-This repository contains tools and scripts for generating, fine-tuning, and evaluating radiology reports using the Indiana University Chest X-ray (CXR) dataset.
+This repository contains tools and scripts for generating, fine-tuning, and evaluating radiology reports on the Indiana University Chest X-ray (CXR) dataset using different vision language models (such as BLIP, MAIRA 2, MedGemma etc.)
 
 
 ## Project Overview
