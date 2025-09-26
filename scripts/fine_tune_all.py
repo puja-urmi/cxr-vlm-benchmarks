@@ -51,7 +51,7 @@ def main():
 		output_dir="./results",
 		per_device_train_batch_size=2,
 		per_device_eval_batch_size=2,
-		num_train_epochs=10,
+		num_train_epochs=20,
 		logging_dir="./logs",
 		fp16=torch.cuda.is_available(),
 	)
