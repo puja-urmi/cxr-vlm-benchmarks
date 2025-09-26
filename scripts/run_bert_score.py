@@ -3,7 +3,7 @@ import pandas as pd
 from bert_score import score
 
 # Load generated and ground truth reports from the same CSV
-df = pd.read_csv('/home/psaha03/scratch/complete_dataset/cxr_generated_results.csv')
+df = pd.read_csv('/home/psaha03/scratch/results/results_pretrained/generated_report_pretrained.csv')
 candidates = df['generated_report'].astype(str).tolist()
 references = df['ground_truth_report'].astype(str).tolist()
 

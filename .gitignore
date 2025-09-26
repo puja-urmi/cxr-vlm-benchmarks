@@ -1,2 +1,5 @@
 venv/*
 scripts/logs_*.log
+scripts/results/*
+scripts/__pycache__/*
+scripts/fine_tuned_generate_cxr/*

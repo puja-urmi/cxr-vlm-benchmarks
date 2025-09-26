@@ -11,4 +11,4 @@
 module load python/3.11
 source /home/psaha03/scratch/env/bin/activate
 
-python /home/psaha03/scratch/xray-report-generation/scripts/generate_cxr.py
+python /home/psaha03/scratch/xray-report-generation/scripts/generate_tuned_cxr.py
