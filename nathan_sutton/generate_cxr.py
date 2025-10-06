@@ -8,7 +8,7 @@ def main():
     reports_csv = '/home/psaha03/scratch/complete_dataset/indiana_test.csv'
     projections_csv = '/home/psaha03/scratch/complete_dataset/indiana_projections_complete.csv'
     image_dir = '/home/psaha03/scratch/complete_dataset/images'
-    output_csv = '/home/psaha03/scratch/results/ft10/generated_report_ft20.csv'
+    output_csv = '/home/psaha03/scratch/complete_dataset/generated_report_pretrained.csv'
 
     # Load data
     reports = pd.read_csv(reports_csv)
@@ -27,10 +27,14 @@ def main():
     # Add image path
     df['image_path'] = df['filename'].apply(lambda x: os.path.join(image_dir, x))
 
-    # Load model and processor from local fine-tuned directory
-    model_dir = '/home/psaha03/scratch/models/20_epoch/fine_tuned_generate_cxr'
-    processor = AutoProcessor.from_pretrained(model_dir)
-    model = AutoModelForVision2Seq.from_pretrained(model_dir)
+    # Load pretrained model and processor
+    processor = AutoProcessor.from_pretrained("nathansutton/generate-cxr")
+    model = AutoModelForVision2Seq.from_pretrained("nathansutton/generate-cxr")
+
+    # # Load model and processor from local fine-tuned directory
+    # model_dir = '/home/psaha03/scratch/models/20_epoch/fine_tuned_generate_cxr'
+    # processor = AutoProcessor.from_pretrained(model_dir)
+    # model = AutoModelForVision2Seq.from_pretrained(model_dir)
 
     # For saving results
     results = []
