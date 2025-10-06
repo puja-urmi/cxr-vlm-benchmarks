@@ -1,7 +1,7 @@
 import pandas as pd
 import os
-from PIL import Image
 import torch
+from PIL import Image
 from transformers import AutoProcessor, AutoModel
 
 def main():
@@ -9,7 +9,7 @@ def main():
     reports_csv = '/home/psaha03/scratch/complete_dataset/indiana_test.csv'
     projections_csv = '/home/psaha03/scratch/complete_dataset/indiana_projections_complete.csv'
     image_dir = '/home/psaha03/scratch/complete_dataset/images'
-    output_csv = '/home/psaha03/scratch/results/nathan_sutton/biovil_t_embeddings.csv'
+    output_csv = '/home/psaha03/scratch/results/cxr_llava_v2/cxr_llava_v2_reports.csv'
 
     # Load data
     reports = pd.read_csv(reports_csv)
@@ -28,17 +28,10 @@ def main():
     # Add image path
     df['image_path'] = df['filename'].apply(lambda x: os.path.join(image_dir, x))
 
-    # Load BiomedVLP-BioViL-T model directly
-    print("Loading BiomedVLP-BioViL-T model...")
-    model = AutoModel.from_pretrained("microsoft/BiomedVLP-BioViL-T", trust_remote_code=True, torch_dtype="auto")
-    
-    # Load the processor/tokenizer
-    processor = AutoProcessor.from_pretrained("microsoft/BiomedVLP-BioViL-T")
-    
-    # # Alternative: Load from local directory if needed
-    # model_dir = '/home/psaha03/scratch/models/BiomedVLP-BioViL-T'
-    # model = AutoModel.from_pretrained(model_dir, trust_remote_code=True, torch_dtype="auto")
-    # processor = AutoProcessor.from_pretrained(model_dir)
+    # Load CXR-LLAVA-v2 model and processor
+    print("Loading CXR-LLAVA-v2 model...")
+    model = AutoModel.from_pretrained("ECOFRI/CXR-LLAVA-v2", trust_remote_code=True, torch_dtype="auto")
+    processor = AutoProcessor.from_pretrained("ECOFRI/CXR-LLAVA-v2")
 
     # For saving results
     results = []
@@ -57,21 +50,24 @@ def main():
             print(f"Error opening image {img_path}: {e}")
             continue
             
-        # Process the image with BioViL-T
-        inputs = processor(images=image, return_tensors="pt")
+        # Prepare a prompt asking for a chest X-ray report
+        prompt = "Describe the findings in this chest X-ray. Generate a detailed radiological report."
         
-        # Get image embeddings from the BioViL-T model
+        # Process image and text with CXR-LLAVA-v2
+        inputs = processor(images=image, text=prompt, return_tensors="pt")
+        
+        # Generate text from the model
         with torch.no_grad():
-            outputs = model(**inputs)
-            image_embeddings = outputs.last_hidden_state.mean(dim=1)
-            
-        # Since BioViL-T is primarily an embedding model and doesn't generate text directly,
-        # we'll use a simplified approach to represent its output
-        # In a real scenario, you might use these embeddings for retrieval or classification
+            outputs = model.generate(
+                **inputs,
+                max_new_tokens=512,
+                do_sample=True,
+                temperature=0.7,
+                top_p=0.9,
+            )
         
-        # For demonstration, we'll create a placeholder report based on the embeddings
-        embedding_norm = torch.norm(image_embeddings).item()
-        generated_text = f"[BioViL-T Image Analysis] Image processed with embedding norm: {embedding_norm:.4f}"
+        # Decode the generated text
+        generated_text = processor.decode(outputs[0], skip_special_tokens=True)
         results.append({
             'uid': row['uid'],
             'image_path': img_path,
@@ -90,7 +86,7 @@ def main():
     
     # Save results to CSV
     pd.DataFrame(results).to_csv(output_csv, index=False)
-    print(f"Saved BioViL-T results to {output_csv}")
+    print(f"Saved CXR-LLAVA-v2 reports to {output_csv}")
 
     # Compute ROUGE scores
     try:

@@ -1,15 +1,14 @@
 import pandas as pd
 import os
 from PIL import Image
-import torch
-from transformers import AutoProcessor, AutoModel
+from transformers import pipeline
 
 def main():
     # Paths
     reports_csv = '/home/psaha03/scratch/complete_dataset/indiana_test.csv'
     projections_csv = '/home/psaha03/scratch/complete_dataset/indiana_projections_complete.csv'
     image_dir = '/home/psaha03/scratch/complete_dataset/images'
-    output_csv = '/home/psaha03/scratch/results/nathan_sutton/biovil_t_embeddings.csv'
+    output_csv = '/home/psaha03/scratch/results/medgemma_4bit/medgemma_generated_reports.csv'
 
     # Load data
     reports = pd.read_csv(reports_csv)
@@ -28,17 +27,13 @@ def main():
     # Add image path
     df['image_path'] = df['filename'].apply(lambda x: os.path.join(image_dir, x))
 
-    # Load BiomedVLP-BioViL-T model directly
-    print("Loading BiomedVLP-BioViL-T model...")
-    model = AutoModel.from_pretrained("microsoft/BiomedVLP-BioViL-T", trust_remote_code=True, torch_dtype="auto")
+    # Use a pipeline as a high-level helper
+    from transformers import pipeline
     
-    # Load the processor/tokenizer
-    processor = AutoProcessor.from_pretrained("microsoft/BiomedVLP-BioViL-T")
-    
-    # # Alternative: Load from local directory if needed
-    # model_dir = '/home/psaha03/scratch/models/BiomedVLP-BioViL-T'
-    # model = AutoModel.from_pretrained(model_dir, trust_remote_code=True, torch_dtype="auto")
-    # processor = AutoProcessor.from_pretrained(model_dir)
+    # Initialize MedGemma pipeline
+    print("Loading MedGemma pipeline...")
+    pipe = pipeline("image-text-to-text", model="google/medgemma-4b-it")
+    print("MedGemma pipeline loaded successfully")
 
     # For saving results
     results = []
@@ -52,26 +47,27 @@ def main():
             print(f"Image not found: {img_path}")
             continue
         try:
+            # Open the image
             image = Image.open(img_path).convert('RGB')
+            
+            # Create messages for MedGemma
+            messages = [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "image", "url": img_path},  # Using local file path
+                        {"type": "text", "text": "Describe this chest X-ray in detail. Provide a radiological report."}
+                    ]
+                },
+            ]
+            
+            # Process with MedGemma
+            response = pipe(text=messages)
+            generated_text = response[0]["generated_text"]
+            
         except Exception as e:
-            print(f"Error opening image {img_path}: {e}")
+            print(f"Error processing image {img_path}: {e}")
             continue
-            
-        # Process the image with BioViL-T
-        inputs = processor(images=image, return_tensors="pt")
-        
-        # Get image embeddings from the BioViL-T model
-        with torch.no_grad():
-            outputs = model(**inputs)
-            image_embeddings = outputs.last_hidden_state.mean(dim=1)
-            
-        # Since BioViL-T is primarily an embedding model and doesn't generate text directly,
-        # we'll use a simplified approach to represent its output
-        # In a real scenario, you might use these embeddings for retrieval or classification
-        
-        # For demonstration, we'll create a placeholder report based on the embeddings
-        embedding_norm = torch.norm(image_embeddings).item()
-        generated_text = f"[BioViL-T Image Analysis] Image processed with embedding norm: {embedding_norm:.4f}"
         results.append({
             'uid': row['uid'],
             'image_path': img_path,
@@ -90,7 +86,7 @@ def main():
     
     # Save results to CSV
     pd.DataFrame(results).to_csv(output_csv, index=False)
-    print(f"Saved BioViL-T results to {output_csv}")
+    print(f"Saved predictions to {output_csv}")
 
     # Compute ROUGE scores
     try:

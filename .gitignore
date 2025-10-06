@@ -1,5 +1,34 @@
-venv/*
-scripts/logs_*.log
+/home/psaha03/scratch/cxr-vlm-benchmarks/env/*
+env/
+venv/
+
+# Ignore all log files throughout the repository
+*.log
+logs_*.log
+logs/
+
+# Ignore results directories
 scripts/results/*
-scripts/__pycache__/*
+results/
+
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+*.so
+.Python
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Ignore temporary and output files
 scripts/fine_tuned_generate_cxr/*
+*.csv
+.DS_Store
+.ipynb_checkpoints/
+*.swp
+*.swo
+
+# Ignore slurm output files
+slurm-*.out

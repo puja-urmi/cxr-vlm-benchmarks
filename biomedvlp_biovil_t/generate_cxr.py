@@ -1,15 +1,14 @@
 import pandas as pd
 import os
 from PIL import Image
-import torch
-from transformers import AutoProcessor, AutoModel
+from transformers import AutoProcessor, AutoModelForVision2Seq
 
 def main():
     # Paths
     reports_csv = '/home/psaha03/scratch/complete_dataset/indiana_test.csv'
     projections_csv = '/home/psaha03/scratch/complete_dataset/indiana_projections_complete.csv'
     image_dir = '/home/psaha03/scratch/complete_dataset/images'
-    output_csv = '/home/psaha03/scratch/results/nathan_sutton/biovil_t_embeddings.csv'
+    output_csv = '/home/psaha03/scratch/complete_dataset/generated_report_pretrained.csv'
 
     # Load data
     reports = pd.read_csv(reports_csv)
@@ -28,17 +27,14 @@ def main():
     # Add image path
     df['image_path'] = df['filename'].apply(lambda x: os.path.join(image_dir, x))
 
-    # Load BiomedVLP-BioViL-T model directly
-    print("Loading BiomedVLP-BioViL-T model...")
-    model = AutoModel.from_pretrained("microsoft/BiomedVLP-BioViL-T", trust_remote_code=True, torch_dtype="auto")
-    
-    # Load the processor/tokenizer
-    processor = AutoProcessor.from_pretrained("microsoft/BiomedVLP-BioViL-T")
-    
-    # # Alternative: Load from local directory if needed
-    # model_dir = '/home/psaha03/scratch/models/BiomedVLP-BioViL-T'
-    # model = AutoModel.from_pretrained(model_dir, trust_remote_code=True, torch_dtype="auto")
+    # Load pretrained model and processor
+    processor = AutoProcessor.from_pretrained("nathansutton/generate-cxr")
+    model = AutoModelForVision2Seq.from_pretrained("nathansutton/generate-cxr")
+
+    # # Load model and processor from local fine-tuned directory
+    # model_dir = '/home/psaha03/scratch/models/20_epoch/fine_tuned_generate_cxr'
     # processor = AutoProcessor.from_pretrained(model_dir)
+    # model = AutoModelForVision2Seq.from_pretrained(model_dir)
 
     # For saving results
     results = []
@@ -56,22 +52,9 @@ def main():
         except Exception as e:
             print(f"Error opening image {img_path}: {e}")
             continue
-            
-        # Process the image with BioViL-T
         inputs = processor(images=image, return_tensors="pt")
-        
-        # Get image embeddings from the BioViL-T model
-        with torch.no_grad():
-            outputs = model(**inputs)
-            image_embeddings = outputs.last_hidden_state.mean(dim=1)
-            
-        # Since BioViL-T is primarily an embedding model and doesn't generate text directly,
-        # we'll use a simplified approach to represent its output
-        # In a real scenario, you might use these embeddings for retrieval or classification
-        
-        # For demonstration, we'll create a placeholder report based on the embeddings
-        embedding_norm = torch.norm(image_embeddings).item()
-        generated_text = f"[BioViL-T Image Analysis] Image processed with embedding norm: {embedding_norm:.4f}"
+        outputs = model.generate(**inputs)
+        generated_text = processor.batch_decode(outputs, skip_special_tokens=True)[0]
         results.append({
             'uid': row['uid'],
             'image_path': img_path,
@@ -85,12 +68,9 @@ def main():
         print("Ground Truth:", row['impression'])
         print("-" * 40)
 
-    # Make sure output directory exists
-    os.makedirs(os.path.dirname(output_csv), exist_ok=True)
-    
     # Save results to CSV
     pd.DataFrame(results).to_csv(output_csv, index=False)
-    print(f"Saved BioViL-T results to {output_csv}")
+    print(f"Saved predictions to {output_csv}")
 
     # Compute ROUGE scores
     try:
